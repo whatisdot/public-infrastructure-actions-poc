@@ -29247,7 +29247,7 @@ async function run() {
         const jobDetails = await octokit.rest.actions.getJobForWorkflowRun({
             owner: apiOptions.owner,
             repo: apiOptions.repo,
-            job_id: jobInfo.data.jobs[-1].id
+            job_id: jobInfo.data.jobs[3].id
         });
         core.info(JSON.stringify(jobDetails));
     }
