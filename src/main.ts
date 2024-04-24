@@ -8,7 +8,7 @@ import * as github from '@actions/github'
 export async function run(): Promise<void> {
   try {
     const octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
-    core.info(`Workflow Run Number ${github.context.runId}`)
+    core.info(`Jobs for Workflow Run Number ${github.context.runId}`)
     const apiOptions = {
       owner: github.context.payload.organization.login,
       repo: `${github.context.payload.repository?.name}`,
@@ -20,7 +20,9 @@ export async function run(): Promise<void> {
     }
     core.info(JSON.stringify(apiOptions))
     core.info(
-      JSON.stringify(await octokit.rest.actions.getWorkflowRun(apiOptions))
+      JSON.stringify(
+        await octokit.rest.actions.listJobsForWorkflowRun(apiOptions)
+      )
     )
   } catch (error) {
     // Fail the workflow run if an error occurs
