@@ -29242,7 +29242,7 @@ async function run() {
             }
         };
         core.info(JSON.stringify(apiOptions));
-        core.info(JSON.stringify(octokit.rest.actions.getWorkflowRun(apiOptions)));
+        core.info(JSON.stringify(await octokit.rest.actions.getWorkflowRun(apiOptions)));
     }
     catch (error) {
         // Fail the workflow run if an error occurs
