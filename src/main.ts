@@ -9,15 +9,13 @@ export async function run(): Promise<void> {
   try {
     const octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
     core.info(`Workflow Run Number ${github.context.runId}`)
-    core.info(
-      JSON.stringify(
-        octokit.rest.actions.getWorkflowRun({
-          owner: github.context.payload.organization.login,
-          repo: `${github.context.payload.repository?.name}`,
-          run_id: github.context.runId
-        })
-      )
-    )
+    const apiOptions = {
+      owner: github.context.payload.organization.login,
+      repo: `${github.context.payload.repository?.name}`,
+      run_id: github.context.runId
+    }
+    core.info(JSON.stringify(apiOptions))
+    core.info(JSON.stringify(octokit.rest.actions.getWorkflowRun(apiOptions)))
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
