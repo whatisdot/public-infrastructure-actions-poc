@@ -17,15 +17,3 @@ author: 'Your name or organization here'
 runs:
   using: node20
   main: dist/index.js
-  steps:
-    - uses: octokit/request-action@v2.x
-      id: http_response
-      with:
-        route: GET /repos/${{ github.repository }}/environments
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - id: environment_data
-      run:
-        echo "names=${{
-        join(fromJSON(steps.http_response.outputs.data).environments.*.name,
-        ',') }}" >> $GITHUB_OUTPUT
