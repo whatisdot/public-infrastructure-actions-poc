@@ -24959,12 +24959,11 @@ const wait_1 = __nccwpck_require__(5259);
 async function run() {
     try {
         const ms = '1000';
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        console.log(`Waiting ${ms} milliseconds ...`);
+        core.info(`Waiting ${ms} milliseconds ...`);
         // Log the current timestamp, wait, then log the new timestamp
-        console.log(new Date().toTimeString());
+        core.info(new Date().toTimeString());
         await (0, wait_1.wait)(parseInt(ms, 10));
-        console.log(new Date().toTimeString());
+        core.info(new Date().toTimeString());
         // Set outputs for other workflow steps to use
         core.setOutput('time', new Date().toTimeString());
     }
