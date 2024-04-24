@@ -29232,7 +29232,11 @@ async function run() {
     try {
         const octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         core.info(`Workflow Run Number ${github.context.runId}`);
-        core.info(JSON.stringify(octokit.rest.actions.getWorkflowRun()));
+        core.info(JSON.stringify(octokit.rest.actions.getWorkflowRun({
+            owner: github.context.payload.organization.login,
+            repo: `${github.context.payload.repository?.name}`,
+            run_id: github.context.runId
+        })));
     }
     catch (error) {
         // Fail the workflow run if an error occurs
