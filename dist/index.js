@@ -29230,9 +29230,9 @@ const github = __importStar(__nccwpck_require__(5438));
  */
 async function run() {
     try {
-        core.info('### Context ###');
-        core.info(JSON.stringify(github.context, null, 2));
-        core.info(`Run number ${github.context.runId}`);
+        const octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
+        core.info(`Workflow Run Number ${github.context.runId}`);
+        core.info(JSON.stringify(octokit.rest.actions.getWorkflowRun()));
     }
     catch (error) {
         // Fail the workflow run if an error occurs
