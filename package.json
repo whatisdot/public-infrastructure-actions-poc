@@ -1,16 +1,16 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
+  "name": "public-infrastructure-action-poc",
+  "description": "Public Infrastructure Action PoC",
   "version": "0.0.0",
   "author": "",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "homepage": "https://github.com/whatisdot/public-infrastructure-actions-poc",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/whatisdot/public-infrastructure-actions-poc.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/whatisdot/public-infrastructure-actions-poc/issues"
   },
   "keywords": [
     "actions",
