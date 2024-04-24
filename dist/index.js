@@ -29235,7 +29235,11 @@ async function run() {
         const apiOptions = {
             owner: github.context.payload.organization.login,
             repo: `${github.context.payload.repository?.name}`,
-            run_id: github.context.runId
+            run_id: github.context.runId,
+            Headers: {
+                'X-GitHub-Api-Version': '2022-11-28',
+                Accept: 'application/vnd.github+json'
+            }
         };
         core.info(JSON.stringify(apiOptions));
         core.info(JSON.stringify(octokit.rest.actions.getWorkflowRun(apiOptions)));
