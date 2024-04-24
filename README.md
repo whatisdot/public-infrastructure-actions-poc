@@ -11,6 +11,7 @@ results.
 - [Saving Artifacts](https://github.com/actions/toolkit/tree/master/packages/artifact)
 - [Triggering a workflow from a workflow](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow)
 - [Matching output via patterns](https://github.com/actions/toolkit/blob/master/docs/commands.md#problem-matchers)
+- [GitHub REST API](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28)
 
 > If you do want to trigger a workflow from within a workflow run, you can use a
 > GitHub App installation access token or a personal access token instead of
