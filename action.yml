@@ -1,5 +1,7 @@
 name: 'Public Infrastructure Action PoC'
-description: 'A proof of concept for GitHub workflow-to-workflow interactions, outputs, and results.'
+description:
+  'A proof of concept for GitHub workflow-to-workflow interactions, outputs, and
+  results.'
 author: 'Your name or organization here'
 
 # inputs:
