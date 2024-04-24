@@ -29230,8 +29230,8 @@ const github = __importStar(__nccwpck_require__(5438));
  */
 async function run() {
     try {
-        core.info("### Context ###");
-        core.info(`${github.context}`);
+        core.info('### Context ###');
+        core.info(JSON.stringify(github.context, null, 2));
     }
     catch (error) {
         // Fail the workflow run if an error occurs

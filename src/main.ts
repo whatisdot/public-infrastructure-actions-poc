@@ -7,9 +7,8 @@ import * as github from '@actions/github'
  */
 export async function run(): Promise<void> {
   try {
-    core.info("### Context ###")
-    core.info(`${github.context}`)
-
+    core.info('### Context ###')
+    core.info(JSON.stringify(github.context, null, 2))
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
