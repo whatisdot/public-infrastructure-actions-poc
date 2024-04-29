@@ -29230,6 +29230,8 @@ const github = __importStar(__nccwpck_require__(5438));
  */
 async function run() {
     try {
+        core.info('Context:');
+        core.info(JSON.stringify(github.context));
         const octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         core.info(`Jobs for Workflow Run Number ${github.context.runId}`);
         const apiOptions = {

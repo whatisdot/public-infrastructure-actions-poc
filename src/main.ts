@@ -7,6 +7,8 @@ import * as github from '@actions/github'
  */
 export async function run(): Promise<void> {
   try {
+    core.info('Context:')
+    core.info(JSON.stringify(github.context))
     const octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
     core.info(`Jobs for Workflow Run Number ${github.context.runId}`)
     const apiOptions = {
