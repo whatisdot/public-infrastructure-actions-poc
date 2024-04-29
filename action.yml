@@ -4,11 +4,10 @@ description:
   results.'
 author: 'Your name or organization here'
 
-# inputs:
-#   milliseconds:
-#     description: 'Your input description here'
-#     required: true
-#     default: '1000'
+inputs:
+  ref:
+    description: The name of the commit/branch/tag.
+    required: true
 
 # outputs:
 #   time:
