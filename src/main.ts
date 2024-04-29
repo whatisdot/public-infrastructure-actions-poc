@@ -70,7 +70,11 @@ class Consolidator {
     })
     core.info('Workflow Schema:')
     core.info(
-      YAML.parse(Buffer.from(response.data.content, 'base64').toString('utf8'))
+      JSON.stringify(
+        YAML.parse(
+          Buffer.from(response.data.content, 'base64').toString('utf8')
+        )
+      )
     )
   }
 

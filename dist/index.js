@@ -29288,7 +29288,7 @@ class Consolidator {
             path: this.context.payload.workflow
         });
         core.info('Workflow Schema:');
-        core.info(yaml_1.default.parse(Buffer.from(response.data.content, 'base64').toString('utf8')));
+        core.info(JSON.stringify(yaml_1.default.parse(Buffer.from(response.data.content, 'base64').toString('utf8'))));
     }
     /**
      * Identify the job definition(s) that this job relies upon (what it specified as "needs").
