@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import YAML from 'yaml'
 import { Context } from '@actions/github/lib/context'
 import { Octokit } from '@octokit/core'
 import { PaginateInterface } from '@octokit/plugin-paginate-rest'
@@ -63,12 +64,14 @@ class Consolidator {
    * YAML file of the current branch and return a data structure.
    */
   async getWorkflowSchema() {
-    const response = await this.octokit.rest.repos.getContent({
+    const response: any = await this.octokit.rest.repos.getContent({
       ...this.commonQueryParams(),
       path: this.context.payload.workflow
     })
     core.info('Workflow Schema:')
-    core.info(JSON.stringify(response.data))
+    core.info(
+      YAML.parse(Buffer.from(response.data.content, 'base64').toString('utf8'))
+    )
   }
 
   /**
