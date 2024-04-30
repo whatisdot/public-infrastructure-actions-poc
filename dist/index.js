@@ -29323,9 +29323,9 @@ class Consolidator {
         const jobArtifacts = await this.getRunArtifacts();
         jobDetails.map(job => {
             // get any artifacts with a name that matches the job id
-            const artifact = jobArtifacts.data.artifacts.find(a => a.name == job.id);
+            const artifact = jobArtifacts.data.artifacts.find(a => a.name.toString() == job.id.toString());
             if (artifact)
-                core.info(`Found Artifact for ${job.id}`);
+                core.info(`Found Artifact for ${job.id}, ${artifact.id}`);
             // download the artifact as a temp file and decompress it
             // load the file as JSON
             // return the data structure as an array of objects
