@@ -46,8 +46,13 @@ class Consolidator {
 
   async run() {
     const neededJobConfigs = await this.getJobsNeededByThisJob()
+    const workflowJobs = await this.getWorkflowJobs()
     const jobDetails = neededJobConfigs
-      .map(async (config: any) => await this.getJobDetails(config.name))
+      .map(async (config: any) =>
+        workflowJobs.data.jobs.filter((job: any) =>
+          job.name.startsWith(config.name)
+        )
+      )
       .flat()
     const jobOutputs = this.getJobOutputs(jobDetails)
   }
