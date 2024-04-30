@@ -29301,22 +29301,20 @@ class Consolidator {
      * Get the job details for any job that ran with that same definition.
      */
     async getJobDetails(jobName) {
-        const workflowJobs = this.getWorkflowJobs();
+        const workflowJobs = await this.getWorkflowJobs();
         return workflowJobs.data.jobs.filter((job) => job.name.startsWith(jobName));
     }
     /**
      * Get all jobs running within this workflow.
      */
     async getWorkflowJobs() {
-        if (this._workflowJobs)
-            return this._workflowJobs;
-        this._workflowJobs = await this.octokit.rest.actions.listJobsForWorkflowRun({
+        const workflowJobs = await this.octokit.rest.actions.listJobsForWorkflowRun({
             ...this.commonQueryParams(),
             run_id: this.context.runId
         });
         core.info(`listJobsForWorkflowRun`);
-        core.info(JSON.stringify(this._workflowJobs));
-        return this._workflowJobs;
+        core.info(JSON.stringify(workflowJobs));
+        return workflowJobs;
     }
     /**
      * Gather the outputs for the job runs and put them into an array.

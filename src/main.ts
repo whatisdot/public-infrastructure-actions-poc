@@ -86,7 +86,7 @@ class Consolidator {
    * Get the job details for any job that ran with that same definition.
    */
   async getJobDetails(jobName: string) {
-    const workflowJobs: any = this.getWorkflowJobs()
+    const workflowJobs = await this.getWorkflowJobs()
     return workflowJobs.data.jobs.filter((job: any) =>
       job.name.startsWith(jobName)
     )
@@ -96,18 +96,16 @@ class Consolidator {
    * Get all jobs running within this workflow.
    */
   async getWorkflowJobs() {
-    if (this._workflowJobs) return this._workflowJobs
-
-    this._workflowJobs = await this.octokit.rest.actions.listJobsForWorkflowRun(
+    const workflowJobs = await this.octokit.rest.actions.listJobsForWorkflowRun(
       {
         ...this.commonQueryParams(),
         run_id: this.context.runId
       }
     )
     core.info(`listJobsForWorkflowRun`)
-    core.info(JSON.stringify(this._workflowJobs))
+    core.info(JSON.stringify(workflowJobs))
 
-    return this._workflowJobs
+    return workflowJobs
   }
 
   /**
