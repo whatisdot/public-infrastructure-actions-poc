@@ -48,7 +48,7 @@ class Consolidator {
     const neededJobConfigs = await this.getJobsNeededByThisJob()
     const jobDetails = neededJobConfigs
       .map(async (config: any) => await this.getJobDetails(config.name))
-      .flatten()
+      .flat()
     const jobOutputs = this.getJobOutputs(jobDetails)
   }
 
