@@ -29320,14 +29320,10 @@ class Consolidator {
      * Gather the outputs for the job runs and put them into an array.
      */
     async getJobOutputs(jobDetails) {
-        const response = await this.octokit.rest.actions.listWorkflowRunArtifacts({
-            ...this.commonQueryParams(),
-            run_id: this.context.runId
-        });
-        const jobArtifacts = response.data.artifacts;
+        const jobArtifacts = await this.getRunArtifacts();
         jobDetails.map(job => {
             // get any artifacts with a name that matches the job id
-            const artifact = jobArtifacts.find(artifact => artifact.name == job.id);
+            const artifact = jobArtifacts.data.artifacts.find(artifact => artifact.name == job.id);
             if (artifact)
                 core.info(`Found Artifact for ${job.id}`);
             // download the artifact as a temp file and decompress it
@@ -29335,6 +29331,18 @@ class Consolidator {
             // return the data structure as an array of objects
             return {};
         });
+    }
+    /**
+     * Get all artifacts associated with this run.
+     */
+    async getRunArtifacts() {
+        const response = await this.octokit.rest.actions.listWorkflowRunArtifacts({
+            ...this.commonQueryParams(),
+            run_id: this.context.runId
+        });
+        core.info('listWorkflowRunArtifacts');
+        core.info(JSON.stringify(response));
+        return response;
     }
     /**
      * Return the array as outputs for this job.
