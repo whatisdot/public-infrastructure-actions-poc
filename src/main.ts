@@ -49,9 +49,10 @@ class Consolidator {
     const workflowJobs = await this.getWorkflowJobs()
     const jobDetails = neededJobConfigs
       .map(async (config: any) =>
-        workflowJobs.data.jobs.filter((job: any) =>
-          job.name.startsWith(config.name)
-        )
+        workflowJobs.data.jobs.filter((job: any) => {
+          core.info(`SEE IF ${job.name} STARTS WITH ${config.name}`)
+          return job.name.startsWith(config.name)
+        })
       )
       .flat()
     const jobOutputs = this.getJobOutputs(jobDetails)
