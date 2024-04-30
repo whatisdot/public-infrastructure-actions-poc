@@ -32,8 +32,8 @@ class Consolidator {
   constructor() {
     this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
     this.context = github.context
-    core.debug('Context:')
-    core.debug(JSON.stringify(this.context))
+    core.info('Context:')
+    core.info(JSON.stringify(this.context))
     // core.getInput()
   }
 
@@ -76,8 +76,8 @@ class Consolidator {
     this._schema = YAML.parse(
       Buffer.from(response.data.content, 'base64').toString('utf8')
     )
-    core.debug('Workflow Schema:')
-    core.debug(JSON.stringify(this._schema))
+    core.info('Workflow Schema:')
+    core.info(JSON.stringify(this._schema))
 
     return this._schema
   }
@@ -104,8 +104,8 @@ class Consolidator {
         run_id: this.context.runId
       }
     )
-    core.debug(`listJobsForWorkflowRun`)
-    core.debug(JSON.stringify(this._workflowJobs))
+    core.info(`listJobsForWorkflowRun`)
+    core.info(JSON.stringify(this._workflowJobs))
 
     return this._workflowJobs
   }
@@ -122,7 +122,7 @@ class Consolidator {
     jobDetails.map(job => {
       // get any artifacts with a name that matches the job id
       const artifact = jobArtifacts.find(artifact => artifact.name == job.id)
-      if (artifact) core.debug(`Found Artifact for ${job.id}`)
+      if (artifact) core.info(`Found Artifact for ${job.id}`)
       // download the artifact as a temp file and decompress it
       // load the file as JSON
       // return the data structure as an array of objects
