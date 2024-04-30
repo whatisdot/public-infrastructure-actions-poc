@@ -117,6 +117,8 @@ class Consolidator {
    * Gather the outputs for the job runs and put them into an array.
    */
   async getJobOutputs(jobDetails: Array<any>) {
+    core.info('JOB DETAILS')
+    core.info(JSON.stringify(jobDetails))
     const jobArtifacts = await this.getRunArtifacts()
     jobDetails
       .map(j => j.id.toString())
