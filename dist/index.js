@@ -29253,6 +29253,7 @@ class Consolidator {
     constructor() {
         this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         this.context = github.context;
+        // core.getInput()
     }
     commonQueryParams() {
         return {
@@ -29285,7 +29286,8 @@ class Consolidator {
     async getWorkflowSchema() {
         const response = await this.octokit.rest.repos.getContent({
             ...this.commonQueryParams(),
-            path: this.context.payload.workflow
+            path: this.context.payload.workflow,
+            ref: this.context.payload.ref
         });
         core.info('Workflow Schema:');
         core.info(JSON.stringify(yaml_1.default.parse(Buffer.from(response.data.content, 'base64').toString('utf8'))));
