@@ -1,5 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import axios from 'axios'
+import * as tmp from 'tmp'
 import YAML from 'yaml'
 import { Context } from '@actions/github/lib/context'
 import { Octokit } from '@octokit/core'
@@ -285,6 +287,9 @@ class Consolidator {
     })
     core.info('Artifact Content:')
     core.info(JSON.stringify(response))
+    const axiosResponse = await axios.get(response.url)
+    core.info(`${axiosResponse}`)
+    // tmp.file(response.url)
     // load the file as JSON
     // return the data structure as an array of objects
     return {}
