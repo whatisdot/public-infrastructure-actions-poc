@@ -26,8 +26,6 @@ export async function run(): Promise<void> {
 class Consolidator {
   octokit: Octokit & Api & { paginate: PaginateInterface }
   context: Context
-  _schema: any
-  _workflowJobs: any
 
   constructor() {
     this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
@@ -48,12 +46,8 @@ class Consolidator {
     const neededJobConfigs = await this.getJobsNeededByThisJob()
     const workflowJobs = await this.getWorkflowJobs()
     const jobDetails = neededJobConfigs
-      .map(async (config: any) =>
-        workflowJobs.data.jobs.filter((job: any) => {
-          //// THE PROBLEM IS HERE ///
-          core.info(
-            `SEE IF "${job.name}" STARTS WITH "${config.name}" == (${job.name.startsWith(config.name)})`
-          )
+      .map((config: any) =>
+        workflowJobs.filter(job => {
           return job.name.startsWith(config.name)
         })
       )
@@ -75,20 +69,18 @@ class Consolidator {
    * YAML file of the current branch and return a data structure.
    */
   async getWorkflowSchema() {
-    if (this._schema) return this._schema
-
     const response: any = await this.octokit.rest.repos.getContent({
       ...this.commonQueryParams(),
       path: this.context.payload.workflow,
       ref: this.context.payload.ref
     })
-    this._schema = YAML.parse(
+    const schema = YAML.parse(
       Buffer.from(response.data.content, 'base64').toString('utf8')
     )
     core.info('Workflow Schema:')
-    core.info(JSON.stringify(this._schema))
+    core.info(JSON.stringify(schema))
 
-    return this._schema
+    return schema
   }
 
   /**
@@ -96,9 +88,7 @@ class Consolidator {
    */
   async getJobDetails(jobName: string) {
     const workflowJobs = await this.getWorkflowJobs()
-    return workflowJobs.data.jobs.filter((job: any) =>
-      job.name.startsWith(jobName)
-    )
+    return workflowJobs.filter((job: any) => job.name.startsWith(jobName))
   }
 
   /**
@@ -114,7 +104,7 @@ class Consolidator {
     core.info(`listJobsForWorkflowRun`)
     core.info(JSON.stringify(workflowJobs))
 
-    return workflowJobs
+    return workflowJobs.data.jobs
   }
 
   /**

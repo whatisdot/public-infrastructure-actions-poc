@@ -29250,8 +29250,6 @@ exports.run = run;
 class Consolidator {
     octokit;
     context;
-    _schema;
-    _workflowJobs;
     constructor() {
         this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         this.context = github.context;
@@ -29269,9 +29267,7 @@ class Consolidator {
         const neededJobConfigs = await this.getJobsNeededByThisJob();
         const workflowJobs = await this.getWorkflowJobs();
         const jobDetails = neededJobConfigs
-            .map(async (config) => workflowJobs.data.jobs.filter((job) => {
-            //// THE PROBLEM IS HERE ///
-            core.info(`SEE IF "${job.name}" STARTS WITH "${config.name}" == (${job.name.startsWith(config.name)})`);
+            .map((config) => workflowJobs.filter(job => {
             return job.name.startsWith(config.name);
         }))
             .flat();
@@ -29290,24 +29286,22 @@ class Consolidator {
      * YAML file of the current branch and return a data structure.
      */
     async getWorkflowSchema() {
-        if (this._schema)
-            return this._schema;
         const response = await this.octokit.rest.repos.getContent({
             ...this.commonQueryParams(),
             path: this.context.payload.workflow,
             ref: this.context.payload.ref
         });
-        this._schema = yaml_1.default.parse(Buffer.from(response.data.content, 'base64').toString('utf8'));
+        const schema = yaml_1.default.parse(Buffer.from(response.data.content, 'base64').toString('utf8'));
         core.info('Workflow Schema:');
-        core.info(JSON.stringify(this._schema));
-        return this._schema;
+        core.info(JSON.stringify(schema));
+        return schema;
     }
     /**
      * Get the job details for any job that ran with that same definition.
      */
     async getJobDetails(jobName) {
         const workflowJobs = await this.getWorkflowJobs();
-        return workflowJobs.data.jobs.filter((job) => job.name.startsWith(jobName));
+        return workflowJobs.filter((job) => job.name.startsWith(jobName));
     }
     /**
      * Get all jobs running within this workflow.
@@ -29319,7 +29313,7 @@ class Consolidator {
         });
         core.info(`listJobsForWorkflowRun`);
         core.info(JSON.stringify(workflowJobs));
-        return workflowJobs;
+        return workflowJobs.data.jobs;
     }
     /**
      * Gather the outputs for the job runs and put them into an array.
