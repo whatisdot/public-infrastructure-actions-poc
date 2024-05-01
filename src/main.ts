@@ -113,8 +113,8 @@ class Consolidator {
     this.workflowJobs = []
     this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
     this.context = github.context
-    core.info('Context:')
-    core.info(JSON.stringify(this.context))
+    core.debug('Context:')
+    core.debug(JSON.stringify(this.context))
     // core.getInput()
   }
 
@@ -155,8 +155,8 @@ class Consolidator {
     const schema = YAML.parse(
       Buffer.from(response.data.content, 'base64').toString('utf8')
     )
-    core.info('Workflow Schema:')
-    core.info(JSON.stringify(schema))
+    core.debug('Workflow Schema:')
+    core.debug(JSON.stringify(schema))
 
     return schema
   }
@@ -226,8 +226,8 @@ class Consolidator {
       })
     }
 
-    core.info('getWorkflowJobs:')
-    core.info(JSON.stringify(workflowJobs))
+    core.debug('getWorkflowJobs:')
+    core.debug(JSON.stringify(workflowJobs))
 
     return workflowJobs.data.jobs
   }
@@ -271,14 +271,11 @@ class Consolidator {
       .map(j => j.id.toString())
       .map(jobId => {
         return this.artifacts.find((a: Artifact) => {
-          core.info(
-            `Looking for Artifact "${a.name}" that matches "${jobId}" == (${a.name == jobId})`
-          )
           return a.name == jobId
         })
       })
 
-    core.info(
+    core.debug(
       `Found Artifacts (${JSON.stringify(jobArtifacts.map(a => (a || { id: '' }).id))})`
     )
 
