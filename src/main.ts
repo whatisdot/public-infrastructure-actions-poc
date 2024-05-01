@@ -8,6 +8,7 @@ import { Octokit } from '@octokit/core'
 import { PaginateInterface } from '@octokit/plugin-paginate-rest'
 import { Api } from '@octokit/plugin-rest-endpoint-methods/dist-types/types'
 import * as fs from 'fs'
+import * as unzipper from 'unzipper'
 
 interface JobInfo {
   id: number
@@ -106,6 +107,8 @@ class Consolidator {
   schema: any
 
   constructor() {
+    tmp.setGracefulCleanup() // delete tmp files on process exit
+
     this.artifacts = []
     this.workflowJobs = []
     this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
@@ -288,16 +291,30 @@ class Consolidator {
     })
     core.info('Artifact URL Info:')
     core.info(JSON.stringify(response))
-    const tmpobj = tmp.fileSync()
-    await this.downloadFile(response.url, tmpobj.name)
-    core.info(`File Saved To: ${tmpobj.name}`)
+    const tmpFile = tmp.fileSync()
+    const tmpDir = tmp.dirSync()
+    await this.downloadFile(response.url, tmpFile.name)
+    core.info(`Zip File Saved To: ${tmpFile.name}`)
+    fs.createReadStream(tmpFile.name).pipe(
+      unzipper.Extract({ path: tmpDir.name })
+    )
+    core.info(`Contents Extracted To: ${tmpDir.name}`)
+    const readData = fs.readFileSync(`${tmpDir.name}/output.json`, {
+      encoding: 'utf8',
+      flag: 'r'
+    })
+    core.info(`File Contents: ${readData}`)
 
-    // tmp.file(response.url)
     // load the file as JSON
     // return the data structure as an array of objects
     return {}
   }
 
+  /**
+   * Download from a HTTPS endpoint and stream directly to file.
+   *
+   * Sourced from https://stackoverflow.com/questions/55374755/node-js-axios-download-file-stream-and-writefile
+   */
   async downloadFile(fileUrl: string, outputLocationPath: string) {
     const writer = fs.createWriteStream(outputLocationPath)
 
