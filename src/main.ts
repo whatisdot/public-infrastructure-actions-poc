@@ -288,7 +288,7 @@ class Consolidator {
     core.info('Artifact Content:')
     core.info(JSON.stringify(response))
     const axiosResponse = await axios.get(response.url)
-    core.info(`${axiosResponse}`)
+    core.info(`${JSON.stringify(axiosResponse)}`)
     // tmp.file(response.url)
     // load the file as JSON
     // return the data structure as an array of objects
