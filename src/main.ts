@@ -1,12 +1,13 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import axios from 'axios'
+import Axios from 'axios'
 import * as tmp from 'tmp'
 import YAML from 'yaml'
 import { Context } from '@actions/github/lib/context'
 import { Octokit } from '@octokit/core'
 import { PaginateInterface } from '@octokit/plugin-paginate-rest'
 import { Api } from '@octokit/plugin-rest-endpoint-methods/dist-types/types'
+import * as fs from 'fs'
 
 interface JobInfo {
   id: number
@@ -285,14 +286,43 @@ class Consolidator {
       artifact_id: firstArtifact.id,
       archive_format: 'zip'
     })
-    core.info('Artifact Content:')
+    core.info('Artifact URL Info:')
     core.info(JSON.stringify(response))
-    const axiosResponse = await axios.get(response.url)
-    core.info(`${JSON.stringify(axiosResponse)}`)
+    const tmpobj = tmp.fileSync()
+    await this.downloadFile(response.url, tmpobj.name)
+    core.info(`File Saved To: ${tmpobj.name}`)
+
     // tmp.file(response.url)
     // load the file as JSON
     // return the data structure as an array of objects
     return {}
+  }
+
+  async downloadFile(fileUrl: string, outputLocationPath: string) {
+    const writer = fs.createWriteStream(outputLocationPath)
+
+    return Axios({
+      method: 'get',
+      url: fileUrl,
+      responseType: 'stream'
+    }).then(response => {
+      return new Promise((resolve, reject) => {
+        response.data.pipe(writer)
+        let error: Error | null = null
+        writer.on('error', err => {
+          error = err
+          writer.close()
+          reject(err)
+        })
+        writer.on('close', () => {
+          if (!error) {
+            resolve(true)
+          }
+          //no need to call the reject here, as it will have been called in the
+          //'error' stream;
+        })
+      })
+    })
   }
 
   /**
