@@ -32,6 +32,9 @@ class Consolidator {
     this.context = github.context
     core.info('Context:')
     core.info(JSON.stringify(this.context))
+    throw new Error(
+      'Intentionally fail while testing to make it faster to rerun jobs.'
+    )
     // core.getInput()
   }
 
