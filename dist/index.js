@@ -29250,12 +29250,14 @@ exports.run = run;
 class Consolidator {
     octokit;
     context;
+    workflowJobs;
+    schema;
+    artifacts;
     constructor() {
         this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         this.context = github.context;
         core.info('Context:');
         core.info(JSON.stringify(this.context));
-        throw new Error('Intentionally fail while testing to make it faster to rerun jobs.');
         // core.getInput()
     }
     commonQueryParams() {
@@ -29265,22 +29267,13 @@ class Consolidator {
         };
     }
     async run() {
-        const neededJobConfigs = await this.getJobsNeededByThisJob();
-        const workflowJobs = await this.getWorkflowJobs();
-        const jobDetails = neededJobConfigs
-            .map((config) => workflowJobs.filter(job => {
-            return job.name.startsWith(config.name);
-        }))
-            .flat();
+        // Run async HTTP operations and cache results.
+        this.schema = await this.getWorkflowSchema();
+        this.workflowJobs = await this.getWorkflowJobs();
+        this.artifacts = await this.getRunArtifacts();
+        const jobDetails = this.getJobDetails();
         const jobOutputs = this.getJobOutputs(jobDetails);
-    }
-    /**
-     * Identify the job definition(s) that this job relies upon (what it specified as "needs").
-     */
-    async getJobsNeededByThisJob() {
-        const schema = await this.getWorkflowSchema();
-        const priorJobNames = schema.jobs[this.context.job].needs;
-        return priorJobNames.map((jobName) => schema.jobs[jobName]);
+        throw new Error('Intentionally fail while testing to make it faster to rerun jobs.');
     }
     /**
      * Get the GitHub Action Workflow schema for the currently running job. This will query for the
@@ -29298,13 +29291,6 @@ class Consolidator {
         return schema;
     }
     /**
-     * Get the job details for any job that ran with that same definition.
-     */
-    async getJobDetails(jobName) {
-        const workflowJobs = await this.getWorkflowJobs();
-        return workflowJobs.filter((job) => job.name.startsWith(jobName));
-    }
-    /**
      * Get all jobs running within this workflow.
      */
     async getWorkflowJobs() {
@@ -29317,26 +29303,6 @@ class Consolidator {
         return workflowJobs.data.jobs;
     }
     /**
-     * Gather the outputs for the job runs and put them into an array.
-     */
-    async getJobOutputs(jobDetails) {
-        core.info('JOB DETAILS');
-        core.info(JSON.stringify(jobDetails));
-        const jobArtifacts = await this.getRunArtifacts();
-        jobDetails
-            .map(j => j.id.toString())
-            .map(jobId => {
-            // get any artifacts with a name that matches the job id
-            const artifact = jobArtifacts.data.artifacts.find(a => a.name == jobId);
-            if (artifact)
-                core.info(`Found Artifact for ${jobId}, ${artifact.id}`);
-            // download the artifact as a temp file and decompress it
-            // load the file as JSON
-            // return the data structure as an array of objects
-            return {};
-        });
-    }
-    /**
      * Get all artifacts associated with this run.
      */
     async getRunArtifacts() {
@@ -29346,7 +29312,39 @@ class Consolidator {
         });
         core.info('listWorkflowRunArtifacts');
         core.info(JSON.stringify(response));
-        return response;
+        return response.data.artifacts;
+    }
+    /**
+     * Get the job details for any job that ran with that same definition.
+     */
+    getJobDetails() {
+        const priorJobNames = this.schema.jobs[this.context.job].needs;
+        const neededJobConfigs = priorJobNames.map((jobName) => this.schema.jobs[jobName]);
+        const jobDetails = neededJobConfigs
+            .map((config) => this.workflowJobs.filter((job) => {
+            return job.name.startsWith(config.name);
+        }))
+            .flat();
+        core.info('getJobDetails');
+        core.info(JSON.stringify(jobDetails));
+        return jobDetails;
+    }
+    /**
+     * Gather the outputs for the job runs and put them into an array.
+     */
+    async getJobOutputs(jobDetails) {
+        jobDetails
+            .map(j => j.id.toString())
+            .map(jobId => {
+            // get any artifacts with a name that matches the job id
+            const artifact = this.artifacts.find((a) => a.name == jobId);
+            if (artifact)
+                core.info(`Found Artifact for ${jobId}, ${artifact.id}`);
+            // download the artifact as a temp file and decompress it
+            // load the file as JSON
+            // return the data structure as an array of objects
+            return {};
+        });
     }
     /**
      * Return the array as outputs for this job.
