@@ -104,7 +104,7 @@ class Consolidator {
     this.workflowJobs = await this.getLastRanWorkflowJobs(currentWorkflowJobs)
     core.info('Workflow Jobs')
     core.info(JSON.stringify(this.workflowJobs))
-    // const jobOutputs = this.getJobOutputs(jobDetails)
+    const jobOutputs = this.getJobOutputs(this.workflowJobs)
 
     throw new Error(
       'Intentionally fail while testing to make it faster to rerun jobs.'
