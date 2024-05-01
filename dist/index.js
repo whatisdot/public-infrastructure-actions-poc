@@ -29270,7 +29270,8 @@ class Consolidator {
         const workflowJobs = await this.getWorkflowJobs();
         const jobDetails = neededJobConfigs
             .map(async (config) => workflowJobs.data.jobs.filter((job) => {
-            core.info(`SEE IF ${job.name} STARTS WITH ${config.name}`);
+            //// THE PROBLEM IS HERE ///
+            core.info(`SEE IF "${job.name}" STARTS WITH "${config.name}" == (${job.name.startsWith(config.name)})`);
             return job.name.startsWith(config.name);
         }))
             .flat();
