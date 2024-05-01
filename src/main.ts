@@ -138,7 +138,12 @@ class Consolidator {
       .map(j => j.id.toString())
       .map(jobId => {
         // get any artifacts with a name that matches the job id
-        const artifact = this.artifacts.find((a: any) => a.name == jobId)
+        const artifact = this.artifacts.find((a: any) => {
+          core.info(
+            `Looking for Artifact "${a.name}" that matches "${jobId}" == (${a.name == jobId})`
+          )
+          return a.name == jobId
+        })
         if (artifact) core.info(`Found Artifact for ${jobId}, ${artifact.id}`)
         // download the artifact as a temp file and decompress it
         // load the file as JSON
