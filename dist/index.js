@@ -52022,6 +52022,7 @@ class Consolidator {
         core.info(`Zip File Saved To: ${tmpFile.name}`);
         fs.createReadStream(tmpFile.name).pipe(unzipper.Extract({ path: tmpDir.name }));
         core.info(`Contents Extracted To: ${tmpDir.name}`);
+        core.info(`Directory includes: ${JSON.stringify(fs.readdirSync(tmpDir.name))}`);
         const readData = fs.readFileSync(`${tmpDir.name}/output.json`, {
             encoding: 'utf8',
             flag: 'r'
