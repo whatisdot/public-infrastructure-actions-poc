@@ -29250,10 +29250,12 @@ exports.run = run;
 class Consolidator {
     octokit;
     context;
+    artifacts;
     workflowJobs;
     schema;
-    artifacts;
     constructor() {
+        this.artifacts = [];
+        this.workflowJobs = [];
         this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         this.context = github.context;
         core.info('Context:');
@@ -29375,20 +29377,27 @@ class Consolidator {
      * Gather the outputs for the job runs and put them into an array.
      */
     async getJobOutputs(jobDetails) {
-        jobDetails
+        const jobArtifacts = jobDetails
             .map(j => j.id.toString())
             .map(jobId => {
-            const artifact = this.artifacts.find((a) => {
+            return this.artifacts.find((a) => {
                 core.info(`Looking for Artifact "${a.name}" that matches "${jobId}" == (${a.name == jobId})`);
                 return a.name == jobId;
             });
-            if (artifact)
-                core.info(`Found Artifact for ${jobId}, ${artifact.id}`);
-            // download the artifact as a temp file and decompress it
-            // load the file as JSON
-            // return the data structure as an array of objects
-            return {};
         });
+        core.info(`Found Artifacts (${JSON.stringify(jobArtifacts.map(a => (a || { id: '' }).id))})`);
+        const firstArtifact = jobArtifacts[0] || { id: 0 };
+        // download the artifact as a temp file and decompress it
+        const response = await this.octokit.rest.actions.downloadArtifact({
+            ...this.commonQueryParams(),
+            artifact_id: firstArtifact.id,
+            archive_format: 'zip'
+        });
+        core.info('Artifact Content:');
+        core.info(JSON.stringify(response.data));
+        // load the file as JSON
+        // return the data structure as an array of objects
+        return {};
     }
     /**
      * Return the array as outputs for this job.

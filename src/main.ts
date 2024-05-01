@@ -55,6 +55,29 @@ interface JobInfo {
   head_branch: string | null
 }
 
+interface Artifact {
+  id: number
+  node_id: string
+  name: string
+  size_in_bytes: number
+  url: string
+  archive_download_url: string
+  expired: boolean
+  created_at: string | null
+  expires_at: string | null
+  updated_at: string | null
+  workflow_run?:
+    | {
+        id?: number | undefined
+        repository_id?: number | undefined
+        head_repository_id?: number | undefined
+        head_branch?: string | undefined
+        head_sha?: string | undefined
+      }
+    | null
+    | undefined
+}
+
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -75,11 +98,13 @@ export async function run(): Promise<void> {
 class Consolidator {
   octokit: Octokit & Api & { paginate: PaginateInterface }
   context: Context
-  workflowJobs: any
+  artifacts: Artifact[]
+  workflowJobs: JobInfo[]
   schema: any
-  artifacts: any
 
   constructor() {
+    this.artifacts = []
+    this.workflowJobs = []
     this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`)
     this.context = github.context
     core.info('Context:')
@@ -204,7 +229,7 @@ class Consolidator {
   /**
    * Get all artifacts associated with this run.
    */
-  async getRunArtifacts() {
+  async getRunArtifacts(): Promise<Artifact[]> {
     const response = await this.octokit.rest.actions.listWorkflowRunArtifacts({
       ...this.commonQueryParams(),
       run_id: this.context.runId
@@ -235,22 +260,34 @@ class Consolidator {
   /**
    * Gather the outputs for the job runs and put them into an array.
    */
-  async getJobOutputs(jobDetails: Array<any>) {
-    jobDetails
+  async getJobOutputs(jobDetails: JobInfo[]) {
+    const jobArtifacts: (Artifact | undefined)[] = jobDetails
       .map(j => j.id.toString())
       .map(jobId => {
-        const artifact = this.artifacts.find((a: any) => {
+        return this.artifacts.find((a: Artifact) => {
           core.info(
             `Looking for Artifact "${a.name}" that matches "${jobId}" == (${a.name == jobId})`
           )
           return a.name == jobId
         })
-        if (artifact) core.info(`Found Artifact for ${jobId}, ${artifact.id}`)
-        // download the artifact as a temp file and decompress it
-        // load the file as JSON
-        // return the data structure as an array of objects
-        return {}
       })
+
+    core.info(
+      `Found Artifacts (${JSON.stringify(jobArtifacts.map(a => (a || { id: '' }).id))})`
+    )
+
+    const firstArtifact = jobArtifacts[0] || { id: 0 }
+    // download the artifact as a temp file and decompress it
+    const response = await this.octokit.rest.actions.downloadArtifact({
+      ...this.commonQueryParams(),
+      artifact_id: firstArtifact.id,
+      archive_format: 'zip'
+    })
+    core.info('Artifact Content:')
+    core.info(JSON.stringify(response.data))
+    // load the file as JSON
+    // return the data structure as an array of objects
+    return {}
   }
 
   /**
