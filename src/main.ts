@@ -284,7 +284,7 @@ class Consolidator {
       archive_format: 'zip'
     })
     core.info('Artifact Content:')
-    core.info(JSON.stringify(response.data))
+    core.info(JSON.stringify(response))
     // load the file as JSON
     // return the data structure as an array of objects
     return {}
