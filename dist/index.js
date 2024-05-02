@@ -51874,6 +51874,9 @@ class Consolidator {
     artifacts;
     workflowJobs;
     schema;
+    /**
+     * Initialize clients and member variables.
+     */
     constructor() {
         tmp.setGracefulCleanup(); // delete tmp files on process exit
         this.artifacts = [];
@@ -51882,24 +51885,29 @@ class Consolidator {
         this.context = github.context;
         core.debug('Context:');
         core.debug(JSON.stringify(this.context));
-        // core.getInput()
     }
+    /**
+     * Octokit query parameters that are used across multiple API requests.
+     */
     commonQueryParams() {
         return {
             owner: this.context.payload.organization.login,
             repo: `${this.context.payload.repository?.name}`
         };
     }
+    /**
+     * Runtime entrypoint.
+     */
     async run() {
-        // Run async HTTP operations and cache results.
         this.schema = await this.getWorkflowSchema();
         this.artifacts = await this.getRunArtifacts();
         let currentWorkflowJobs = await this.getRelevantWorkflowJobs(this.context.runId);
         this.workflowJobs = await this.getLastRanWorkflowJobs(currentWorkflowJobs);
-        core.info('Workflow Jobs');
-        core.info(JSON.stringify(this.workflowJobs));
+        core.debug('Workflow Jobs');
+        core.debug(JSON.stringify(this.workflowJobs));
         const jobOutputs = await this.getJobOutputs(this.workflowJobs);
         core.info(`Job Outputs: ${JSON.stringify(jobOutputs)}`);
+        Object.keys(jobOutputs).forEach(jobName => core.setOutput(jobName, jobOutputs[jobName]));
         throw new Error('Intentionally fail while testing to make it faster to rerun jobs.');
     }
     /**
@@ -51979,8 +51987,8 @@ class Consolidator {
             ...this.commonQueryParams(),
             run_id: this.context.runId
         });
-        core.info('listWorkflowRunArtifacts');
-        core.info(JSON.stringify(response));
+        core.debug('listWorkflowRunArtifacts');
+        core.debug(JSON.stringify(response));
         return response.data.artifacts;
     }
     /**
@@ -52042,8 +52050,7 @@ class Consolidator {
             .createReadStream(tmpFile.name)
             .pipe(unzipper.Extract({ path: tmpDir.name }))
             .promise();
-        core.info(`Artifact Files Extracted To: ${tmpDir.name}`);
-        core.info(JSON.stringify(fs.readdirSync(tmpDir.name)));
+        core.debug(`Artifact Files Extracted To ${tmpDir.name}: ${JSON.stringify(fs.readdirSync(tmpDir.name))}`);
         return tmpDir.name;
     }
     /**
@@ -52054,7 +52061,7 @@ class Consolidator {
             encoding: 'utf8',
             flag: 'r'
         });
-        core.info(`File Contents: ${readData}`);
+        core.debug(`Output File Contents: ${readData}`);
         return JSON.parse(readData);
     }
     /**
@@ -52087,10 +52094,6 @@ class Consolidator {
             });
         });
     }
-    /**
-     * Return the array as outputs for this job.
-     */
-    defineActionOutputs() { }
 }
 
 

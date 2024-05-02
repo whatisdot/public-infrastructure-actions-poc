@@ -10,6 +10,9 @@ import { Api } from '@octokit/plugin-rest-endpoint-methods/dist-types/types'
 import * as fs from 'fs'
 import * as unzipper from 'unzipper'
 
+/**
+ * Inferred by VSCode typescript interpreter inspection of Octokit response objects.
+ */
 interface JobInfo {
   id: number
   run_id: number
@@ -40,25 +43,22 @@ interface JobInfo {
         name: string
         number: number
         started_at?: string | null | undefined
-        completed_at?:
-          | string // Fail the workflow run if an error occurs
-          // Fail the workflow run if an error occurs
-          | null
-          | undefined
+        completed_at?: string | null | undefined
       }[]
     | undefined
   check_run_url: string
   labels: string[]
   runner_id: number | null
-  runner_name: /**
-   * Consolidate the output of all jobs that came prior to this job and return as the output of this job.
-   */ string | null
+  runner_name: string | null
   runner_group_id: number | null
   runner_group_name: string | null
   workflow_name: string | null
   head_branch: string | null
 }
 
+/**
+ * Inferred by VSCode typescript interpreter inspection of Octokit response objects.
+ */
 interface Artifact {
   id: number
   node_id: string
@@ -106,6 +106,9 @@ class Consolidator {
   workflowJobs: JobInfo[]
   schema: any
 
+  /**
+   * Initialize clients and member variables.
+   */
   constructor() {
     tmp.setGracefulCleanup() // delete tmp files on process exit
 
@@ -115,9 +118,11 @@ class Consolidator {
     this.context = github.context
     core.debug('Context:')
     core.debug(JSON.stringify(this.context))
-    // core.getInput()
   }
 
+  /**
+   * Octokit query parameters that are used across multiple API requests.
+   */
   commonQueryParams() {
     return {
       owner: this.context.payload.organization.login,
@@ -125,18 +130,23 @@ class Consolidator {
     }
   }
 
+  /**
+   * Runtime entrypoint.
+   */
   async run() {
-    // Run async HTTP operations and cache results.
     this.schema = await this.getWorkflowSchema()
     this.artifacts = await this.getRunArtifacts()
     let currentWorkflowJobs: JobInfo[] = await this.getRelevantWorkflowJobs(
       this.context.runId
     )
     this.workflowJobs = await this.getLastRanWorkflowJobs(currentWorkflowJobs)
-    core.info('Workflow Jobs')
-    core.info(JSON.stringify(this.workflowJobs))
+    core.debug('Workflow Jobs')
+    core.debug(JSON.stringify(this.workflowJobs))
     const jobOutputs = await this.getJobOutputs(this.workflowJobs)
     core.info(`Job Outputs: ${JSON.stringify(jobOutputs)}`)
+    Object.keys(jobOutputs).forEach(jobName =>
+      core.setOutput(jobName, jobOutputs[jobName])
+    )
 
     throw new Error(
       'Intentionally fail while testing to make it faster to rerun jobs.'
@@ -241,8 +251,8 @@ class Consolidator {
       ...this.commonQueryParams(),
       run_id: this.context.runId
     })
-    core.info('listWorkflowRunArtifacts')
-    core.info(JSON.stringify(response))
+    core.debug('listWorkflowRunArtifacts')
+    core.debug(JSON.stringify(response))
 
     return response.data.artifacts
   }
@@ -322,8 +332,9 @@ class Consolidator {
       .createReadStream(tmpFile.name)
       .pipe(unzipper.Extract({ path: tmpDir.name }))
       .promise()
-    core.info(`Artifact Files Extracted To: ${tmpDir.name}`)
-    core.info(JSON.stringify(fs.readdirSync(tmpDir.name)))
+    core.debug(
+      `Artifact Files Extracted To ${tmpDir.name}: ${JSON.stringify(fs.readdirSync(tmpDir.name))}`
+    )
 
     return tmpDir.name
   }
@@ -336,7 +347,7 @@ class Consolidator {
       encoding: 'utf8',
       flag: 'r'
     })
-    core.info(`File Contents: ${readData}`)
+    core.debug(`Output File Contents: ${readData}`)
     return JSON.parse(readData)
   }
 
@@ -371,9 +382,4 @@ class Consolidator {
       })
     })
   }
-
-  /**
-   * Return the array as outputs for this job.
-   */
-  defineActionOutputs() {}
 }
