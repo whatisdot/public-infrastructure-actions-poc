@@ -4,9 +4,11 @@ description:
   results.'
 author: 'Your name or organization here'
 
-# outputs:
-#   from_jobs:
-#     description: An object, where the keys are the names of the prior jobs and value is a JSON string representing its output.
+outputs:
+  from_jobs:
+    description:
+      An object, where the keys are the names of the prior jobs and value is a
+      JSON string representing its output.
 
 runs:
   using: node20
