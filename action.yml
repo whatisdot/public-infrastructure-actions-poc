@@ -4,7 +4,9 @@ description:
   results.'
 author: 'Your name or organization here'
 
-# There should be one output for each prior job. Each output name is a string with the previous job name.
+outputs:
+  from_jobs:
+    description: An object, where the keys are the names of the prior jobs and value is a JSON string representing its output.
 
 runs:
   using: node20
