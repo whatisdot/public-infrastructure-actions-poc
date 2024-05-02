@@ -51906,7 +51906,7 @@ class Consolidator {
         core.debug('Workflow Jobs');
         core.debug(JSON.stringify(this.workflowJobs));
         const jobOutputs = await this.getJobOutputs(this.workflowJobs);
-        Object.keys(jobOutputs).forEach(jobName => core.setOutput(jobName, jobOutputs[jobName]));
+        Object.keys(jobOutputs).forEach(jobName => core.setOutput(jobName, JSON.stringify(jobOutputs[jobName])));
     }
     /**
      * Get the GitHub Action Workflow schema for the currently running job. This will query for the

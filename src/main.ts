@@ -144,7 +144,7 @@ class Consolidator {
     core.debug(JSON.stringify(this.workflowJobs))
     const jobOutputs = await this.getJobOutputs(this.workflowJobs)
     Object.keys(jobOutputs).forEach(jobName =>
-      core.setOutput(jobName, jobOutputs[jobName])
+      core.setOutput(jobName, JSON.stringify(jobOutputs[jobName]))
     )
   }
 
