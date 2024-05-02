@@ -135,7 +135,8 @@ class Consolidator {
     this.workflowJobs = await this.getLastRanWorkflowJobs(currentWorkflowJobs)
     core.info('Workflow Jobs')
     core.info(JSON.stringify(this.workflowJobs))
-    const jobOutputs = this.getJobOutputs(this.workflowJobs)
+    const jobOutputs = await this.getJobOutputs(this.workflowJobs)
+    core.info(`Job Outputs: ${JSON.stringify(jobOutputs)}`)
 
     throw new Error(
       'Intentionally fail while testing to make it faster to rerun jobs.'
@@ -266,55 +267,77 @@ class Consolidator {
   /**
    * Gather the outputs for the job runs and put them into an array.
    */
-  async getJobOutputs(jobDetails: JobInfo[]) {
-    const jobArtifacts: (Artifact | undefined)[] = jobDetails
-      .map(j => j.id.toString())
-      .map(jobId => {
-        return this.artifacts.find((a: Artifact) => {
-          return a.name == jobId
-        })
-      })
-
-    core.debug(
-      `Found Artifacts (${JSON.stringify(jobArtifacts.map(a => (a || { id: '' }).id))})`
+  async getJobOutputs(jobDetails: JobInfo[]): Promise<{ [k: string]: any }> {
+    // create a data structure with the job name and associated artifact
+    const jobArtifacts: { [k: string]: Artifact } = Object.fromEntries(
+      new Map(
+        jobDetails
+          .map(job => [
+            job.name,
+            this.artifacts.find(a => a.name == job.id.toString())
+          ])
+          .filter(e => e[1] != undefined) as [string, Artifact][] // needed because the transcompiler can't tell we're filtering out undefined
+      )
     )
 
-    const firstArtifact = jobArtifacts[0] || { id: 0 }
-    // download the artifact as a temp file and decompress it
-    const response = await this.octokit.rest.actions.downloadArtifact({
-      ...this.commonQueryParams(),
-      artifact_id: firstArtifact.id,
-      archive_format: 'zip'
-    })
-    core.info('Artifact URL Info:')
-    core.info(JSON.stringify(response))
+    core.debug(
+      `Found Artifacts (${JSON.stringify(Object.values(jobArtifacts).map(a => a.id))})`
+    )
+
+    // need to iterate to avoid defining async callbacks
+    const jobResults: { [k: string]: any } = {}
+    for (const jobName of Object.keys(jobArtifacts)) {
+      let artifact = jobArtifacts[jobName]
+      const artifactPath = await this.downloadArtifactFile(artifact)
+      jobResults[jobName] = this.readOutputs(artifactPath)
+    }
+
+    // return the data structure as an array of objects
+    return jobResults
+  }
+
+  /**
+   * Download and unpack an artifact to a temporary directory. Return the directory name.
+   */
+  async downloadArtifactFile(artifact: Artifact): Promise<string> {
     const tmpFile = tmp.fileSync()
     const tmpDir = tmp.dirSync()
-    await this.downloadFile(response.url, tmpFile.name)
-    core.info(`Zip File Saved To: ${tmpFile.name}`)
 
-    // extract the zip file
+    // get the artifact download URL
+    // artifacts are stored as zip files
+    const response = await this.octokit.rest.actions.downloadArtifact({
+      ...this.commonQueryParams(),
+      artifact_id: artifact.id,
+      archive_format: 'zip'
+    })
+    core.debug('Artifact URL Info:')
+    core.debug(JSON.stringify(response))
+
+    // download the zip file for the artifact
+    await this.downloadFile(response.url, tmpFile.name)
+    core.debug(`Artifact Zip File Saved To: ${tmpFile.name}`)
+
+    // extract the artifact to a temporary directory
     await fs
       .createReadStream(tmpFile.name)
       .pipe(unzipper.Extract({ path: tmpDir.name }))
       .promise()
+    core.info(`Artifact Files Extracted To: ${tmpDir.name}`)
+    core.info(JSON.stringify(fs.readdirSync(tmpDir.name)))
 
-    core.info(`Contents Extracted To: ${tmpDir.name}`)
-    core.info(
-      `"/tmp" Directory includes: ${JSON.stringify(fs.readdirSync('/tmp'))}`
-    )
-    core.info(
-      `"${tmpDir.name}" Directory includes: ${JSON.stringify(fs.readdirSync(tmpDir.name))}`
-    )
-    const readData = fs.readFileSync(`${tmpDir.name}/output.json`, {
+    return tmpDir.name
+  }
+
+  /**
+   * Read the outputs from the artifact directory path.
+   */
+  readOutputs(artifactDirectoryPath: string): any {
+    const readData = fs.readFileSync(`${artifactDirectoryPath}/outputs.json`, {
       encoding: 'utf8',
       flag: 'r'
     })
     core.info(`File Contents: ${readData}`)
-
-    // load the file as JSON
-    // return the data structure as an array of objects
-    return {}
+    return JSON.parse(readData)
   }
 
   /**
