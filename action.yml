@@ -4,9 +4,7 @@ description:
   results.'
 author: 'Your name or organization here'
 
-# outputs:
-#   time:
-#     description: 'Your output description here'
+# There should be one output for each prior job. Each output name is a string with the previous job name.
 
 runs:
   using: node20

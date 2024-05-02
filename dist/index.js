@@ -51906,9 +51906,7 @@ class Consolidator {
         core.debug('Workflow Jobs');
         core.debug(JSON.stringify(this.workflowJobs));
         const jobOutputs = await this.getJobOutputs(this.workflowJobs);
-        core.info(`Job Outputs: ${JSON.stringify(jobOutputs)}`);
         Object.keys(jobOutputs).forEach(jobName => core.setOutput(jobName, jobOutputs[jobName]));
-        throw new Error('Intentionally fail while testing to make it faster to rerun jobs.');
     }
     /**
      * Get the GitHub Action Workflow schema for the currently running job. This will query for the
@@ -52024,6 +52022,7 @@ class Consolidator {
             const artifactPath = await this.downloadArtifactFile(artifact);
             jobResults[jobName] = this.readOutputs(artifactPath);
         }
+        core.info(`Job Outputs: ${JSON.stringify(jobResults)}`);
         // return the data structure as an array of objects
         return jobResults;
     }
