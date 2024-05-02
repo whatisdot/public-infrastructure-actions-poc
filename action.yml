@@ -1,23 +1,13 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
+name: 'Public Infrastructure Action PoC'
+description:
+  'A proof of concept for GitHub workflow-to-workflow interactions, outputs, and
+  results.'
 author: 'Your name or organization here'
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
-branding:
-  icon: 'heart'
-  color: 'red'
-
-# Define your inputs here.
-inputs:
-  milliseconds:
-    description: 'Your input description here'
-    required: true
-    default: '1000'
-
-# Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  result:
+    description:
+      The return value of the script, stringified with `JSON.stringify`
 
 runs:
   using: node20

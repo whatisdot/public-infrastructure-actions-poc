@@ -1,40 +1,26 @@
-# Create a GitHub Action Using TypeScript
+# Public Infrastructure Action PoC
 
-[![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
-![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
-[![Check dist/](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml)
-[![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml)
-[![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
+A proof of concept for GitHub workflow-to-workflow interactions, outputs, and
+results.
 
-Use this template to bootstrap the creation of a TypeScript action. :rocket:
+### Helpful links
 
-This template includes compilation support, tests, a validation workflow,
-publishing, and versioning guidance.
+- [Toolkit](https://github.com/actions/toolkit/blob/master/README.md)
+- [Caching](https://github.com/actions/toolkit/tree/master/packages/cache)
+- [GitHub Client](https://github.com/actions/toolkit/tree/master/packages/github)
+- [Saving Artifacts](https://github.com/actions/toolkit/tree/master/packages/artifact)
+- [Triggering a workflow from a workflow](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow)
+- [Matching output via patterns](https://github.com/actions/toolkit/blob/master/docs/commands.md#problem-matchers)
+- [GitHub REST API](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28)
 
-If you are new, there's also a simpler introduction in the
-[Hello world JavaScript action repository](https://github.com/actions/hello-world-javascript-action).
+> If you do want to trigger a workflow from within a workflow run, you can use a
+> GitHub App installation access token or a personal access token instead of
+> GITHUB_TOKEN to trigger events that require a token.
 
-## Create Your Own Action
-
-To create your own action, you can use this repository as a template! Just
-follow the below instructions:
-
-1. Click the **Use this template** button at the top of the repository
-1. Select **Create a new repository**
-1. Select an owner and name for your new repository
-1. Click **Create repository**
-1. Clone your new repository
-
-> [!IMPORTANT]
->
-> Make sure to remove or update the [`CODEOWNERS`](./CODEOWNERS) file! For
-> details on how to use this file, see
-> [About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
+(not sure if this applies to our situation, because it should be
+workflow_dispatch)
 
 ## Initial Setup
-
-After you've cloned the repository to your local machine or codespace, you'll
-need to perform some initial setup steps before you can develop your action.
 
 > [!NOTE]
 >
@@ -71,15 +57,6 @@ need to perform some initial setup steps before you can develop your action.
 
    ...
    ```
-
-## Update the Action Metadata
-
-The [`action.yml`](action.yml) file defines metadata about your action, such as
-input(s) and output(s). For details about this file, see
-[Metadata syntax for GitHub Actions](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions).
-
-When you copy this repository, update `action.yml` with the name, description,
-inputs, and outputs for your action.
 
 ## Update the Action Code
 
