@@ -5,10 +5,9 @@ description:
 author: 'Your name or organization here'
 
 outputs:
-  from_jobs:
+  result:
     description:
-      An object, where the keys are the names of the prior jobs and value is a
-      JSON string representing its output.
+      The return value of the script, stringified with `JSON.stringify`
 
 runs:
   using: node20
