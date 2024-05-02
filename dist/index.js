@@ -52020,11 +52020,14 @@ class Consolidator {
         const tmpDir = tmp.dirSync();
         await this.downloadFile(response.url, tmpFile.name);
         core.info(`Zip File Saved To: ${tmpFile.name}`);
-        fs.createReadStream(tmpFile.name).pipe(unzipper.Extract({ path: tmpDir.name }));
+        // extract the zip file
+        await fs
+            .createReadStream(tmpFile.name)
+            .pipe(unzipper.Extract({ path: tmpDir.name }))
+            .promise();
         core.info(`Contents Extracted To: ${tmpDir.name}`);
         core.info(`"/tmp" Directory includes: ${JSON.stringify(fs.readdirSync('/tmp'))}`);
         core.info(`"${tmpDir.name}" Directory includes: ${JSON.stringify(fs.readdirSync(tmpDir.name))}`);
-        core.info(`"${tmpFile.name}" File includes: ${JSON.stringify(fs.readdirSync(tmpFile.name))}`);
         const readData = fs.readFileSync(`${tmpDir.name}/output.json`, {
             encoding: 'utf8',
             flag: 'r'
