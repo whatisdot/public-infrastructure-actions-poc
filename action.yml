@@ -5,9 +5,10 @@ description:
 author: 'Your name or organization here'
 
 outputs:
-  result:
+  needs_outputs:
     description:
-      The return value of the script, stringified with `JSON.stringify`
+      The output of any jobs listed as a dependency of this job under `needs`.
+      This is stringified with `JSON.stringify`.
 
 runs:
   using: node20

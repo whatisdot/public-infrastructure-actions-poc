@@ -144,7 +144,7 @@ class Consolidator {
     core.debug(JSON.stringify(this.workflowJobs))
     const jobOutputs = await this.getJobOutputs(this.workflowJobs)
 
-    core.setOutput('result', JSON.stringify(jobOutputs))
+    core.setOutput('needs_outputs', JSON.stringify(jobOutputs))
   }
 
   /**
