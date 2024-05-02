@@ -142,9 +142,11 @@ class Consolidator {
     this.workflowJobs = await this.getLastRanWorkflowJobs(currentWorkflowJobs)
     core.debug('Workflow Jobs')
     core.debug(JSON.stringify(this.workflowJobs))
-    const jobOutputs = await this.getJobOutputs(this.workflowJobs)
+    // const jobOutputs = await this.getJobOutputs(this.workflowJobs)
+    const jobOutputs = '{"some_example": "that is hard coded"}'
+    core.info(`needs_outputs: ${jobOutputs}`)
 
-    core.setOutput('needs_outputs', JSON.stringify(jobOutputs))
+    core.setOutput('needs_outputs', jobOutputs)
   }
 
   /**
@@ -295,9 +297,7 @@ class Consolidator {
       const artifactPath = await this.downloadArtifactFile(artifact)
       jobResults[jobName] = this.readOutputs(artifactPath)
     }
-    core.info(`Job Outputs: ${JSON.stringify(jobResults)}`)
 
-    // return the data structure as an array of objects
     return jobResults
   }
 
