@@ -51872,7 +51872,6 @@ class Consolidator {
     octokit;
     context;
     artifacts;
-    workflowJobs;
     schema;
     /**
      * Initialize clients and member variables.
@@ -51880,7 +51879,6 @@ class Consolidator {
     constructor() {
         tmp.setGracefulCleanup(); // delete tmp files on process exit
         this.artifacts = [];
-        this.workflowJobs = [];
         this.octokit = github.getOctokit(`${process.env.GITHUB_TOKEN}`);
         this.context = github.context;
         core.debug('Context:');
@@ -51896,17 +51894,20 @@ class Consolidator {
         };
     }
     /**
-     * Runtime entrypoint.
+     * Runtime entrypoint. Query for the last successful ran (not reran) jobs prior to this job and
+     * return the content of the outputs JSON as an output of this job. Outputs of this job will have
+     * the same key/name as the strings defined in the `needs` configuration.
      */
     async run() {
         this.schema = await this.getWorkflowSchema();
         this.artifacts = await this.getRunArtifacts();
-        let currentWorkflowJobs = await this.getRelevantWorkflowJobs(this.context.runId);
-        this.workflowJobs = await this.getLastRanWorkflowJobs(currentWorkflowJobs);
-        core.debug('Workflow Jobs');
-        core.debug(JSON.stringify(this.workflowJobs));
-        const jobOutputs = await this.getJobOutputs(this.workflowJobs);
-        core.setOutput('result', JSON.stringify(jobOutputs));
+        const results = {};
+        for (let jobName of this.schema.jobs[this.context.job].needs) {
+            const currentWorkflowJobs = await this.getRelevantWorkflowJobs(jobName, this.context.runId);
+            const lastRanWorkflows = await this.getLastRanWorkflowJobs(jobName, currentWorkflowJobs);
+            const jobOutputs = await this.getJobOutputs(lastRanWorkflows);
+            core.setOutput(jobName, JSON.stringify(jobOutputs));
+        }
     }
     /**
      * Get the GitHub Action Workflow schema for the currently running job. This will query for the
@@ -51928,7 +51929,7 @@ class Consolidator {
      * job as a dependent. If a workflow has been reran, this will iteratively query previous runs
      * until it can identify the job details that generated Artifacts.
      */
-    async getLastRanWorkflowJobs(workflowJobs) {
+    async getLastRanWorkflowJobs(jobName, workflowJobs) {
         if (workflowJobs.length == 0)
             return [];
         // runAttempt should be the same across jobs
@@ -51941,18 +51942,18 @@ class Consolidator {
         // save the job names to filter by later
         const reranJobNames = jobsToRerun.map(job => job.name);
         // query for the relevent jobs again, but from the previous run attempt
-        let moreJobs = await this.getRelevantWorkflowJobs(this.context.runId, runAttempt - 1);
+        let moreJobs = await this.getRelevantWorkflowJobs(jobName, this.context.runId, runAttempt - 1);
         // filter out the jobs that don't have the same name as the relevent ones from this run
         moreJobs = moreJobs.filter(job => reranJobNames.includes(job.name));
         // return the jobs to return while recursing in case we need to look back farther in the run attempts
-        return jobsToReturn.concat(await this.getLastRanWorkflowJobs(moreJobs));
+        return jobsToReturn.concat(await this.getLastRanWorkflowJobs(jobName, moreJobs));
     }
     /**
      * Query for and filter jobs only relevent for the dependency relation.
      */
-    async getRelevantWorkflowJobs(runId, runAttempt = null) {
+    async getRelevantWorkflowJobs(jobName, runId, runAttempt = null) {
         let workflowJobs = await this.getWorkflowJobs(runId, runAttempt);
-        return this.filterForRelevantJobDetails(workflowJobs);
+        return this.filterForRelevantJobDetails(jobName, workflowJobs);
     }
     /**
      * Get all jobs running within this workflow. An optional attempt number can be passed.
@@ -51992,15 +51993,9 @@ class Consolidator {
     /**
      * Get the job details for any job that ran with that same definition.
      */
-    filterForRelevantJobDetails(workflowJobs) {
-        const priorJobNames = this.schema.jobs[this.context.job].needs;
-        let jobDetails = priorJobNames
-            .map(jobName => this.schema.jobs[jobName])
-            .map((config) => workflowJobs.filter(job => {
-            return job.name.startsWith(config.name);
-        }))
-            .flat();
-        return jobDetails;
+    filterForRelevantJobDetails(jobName, workflowJobs) {
+        const config = this.schema.jobs[jobName];
+        return workflowJobs.filter(job => job.name.startsWith(config.name));
     }
     /**
      * Gather the outputs for the job runs and put them into an array.

@@ -4,11 +4,6 @@ description:
   results.'
 author: 'Your name or organization here'
 
-outputs:
-  result:
-    description:
-      The return value of the script, stringified with `JSON.stringify`
-
 runs:
   using: node20
   main: dist/index.js
